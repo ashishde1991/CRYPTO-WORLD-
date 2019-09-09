@@ -32,7 +32,6 @@ for row in table.find_all('tr'):
         continue
     data.append(( Name,symbol, price,MarketCap,Circulating_Supply,Volume))
     
-
 df = pd.DataFrame(data)
 df.columns = [ 'Name','Symbol','Price','MarketCap','Circulating_Supply','Volume']
 
