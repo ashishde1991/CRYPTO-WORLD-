@@ -1,0 +1,52 @@
+from binance.client import Client
+import personal
+import pandas as pd
+import time
+import datetime   # for dealing with times
+from pymongo import MongoClient
+import json
+
+client = Client(personal.api_key,personal.api_secret)
+
+
+def kline(symbol,dfklines):
+         print(symbol)
+         klines = client.get_historical_klines(symbol=symbol, interval='1h', start_str='1556409600', end_str='1561731894', limit=1000)
+         if len(klines) == 0:
+             print  ("NO DATA FOR SYMBOL {}".format(symbol))
+             return
+        # print (klines)
+         dfklines[symbol] = pd.DataFrame(klines)
+    
+         dfklines[symbol].columns = ['open_time',
+                     'o', 'h', 'l', 'c', 'v',
+                     'close_time', 'qav', 'num_trades',
+                     'taker_base_vol', 'taker_quote_vol', 'ignore']
+    
+         dfklines[symbol] =  dfklines[symbol].drop("ignore",axis=1)
+    
+         dfklines[symbol]['open_time'] = pd.to_datetime( dfklines[symbol]['open_time'], unit='ms')
+
+         from bson import json_util
+         client1 = MongoClient()
+         db = client1[symbol]
+         col1 = db[symbol]
+         records = json.loads(dfklines[symbol].to_json()).values()
+         col1.insert_many(records)
+
+
+
+#getting all the listed currencies 
+tickers = client.get_ticker()
+dtickers = pd.DataFrame(tickers)
+dtickers.columns
+dtickers['symbol']
+dtickers.symbol
+
+dklines={}
+for x in dtickers.symbol:
+    kline(x,dklines)
+
+if __name__ == "__main__":
+    kline()
+    
