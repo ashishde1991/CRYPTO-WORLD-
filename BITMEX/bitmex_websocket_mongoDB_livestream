@@ -1,0 +1,50 @@
+#pip install bitmex-ws
+#pip install pymongo 
+
+import time,json
+import pandas as pd
+from pymongo import MongoClient
+#from bitmex_websocket import BitMEXWebsocket
+#ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v1", symbol="XBTUSD")
+#jws1 = BitMEXWebsocket(endpoint="https://www.bitmex.com/api/v1", symbol="XBTUSD")
+from websocket import create_connection
+#"wss://www.bitmex.com/realtime"
+
+
+count = 0
+for i in range(3):
+    try:
+        ws2 = create_connection("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD")
+#        ws2 = create_connection("wss://www.bitmex.com/realtime?subscribe=trade,orderBook:XBTUSD")
+
+    except Exception as error:
+        print('Caught this error: '+ repr(error))
+        time.sleep(3)
+    else:
+        break
+
+client = MongoClient('localhost',27017)
+db = client.btx
+btx_conn = db.btxconn
+df = pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'size', 'price',
+                           'tickDirection', 'trdMatchID', 'grossValue', 'homeNotional','foreignNotional'])
+
+
+while True:
+    try:
+        result = ws2.recv()
+        result = json.loads(result)
+        print ("Received '%s'" % result, time.time())
+        df = df.append(result['data'], ignore_index=True) 
+        count += 1
+        db.btx_conn.insert_one(result)
+    except Exception as error:
+        print('Caught this error: ' + repr(error))
+        time.sleep(3)
+
+ws2.close()
+
+
+
+
+   
