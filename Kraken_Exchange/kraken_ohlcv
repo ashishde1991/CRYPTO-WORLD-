@@ -1,0 +1,34 @@
+from urllib.request import urlopen
+      import urllib, json
+
+#      url = "https://api.cryptowat.ch/markets/kraken/btcusd/ohlc"
+     
+import pprint      
+import requests      
+import json
+import datetime
+import time
+'''
+# Define the start date
+t_start = datetime.datetime(2019, 4, 1, 0, 0)
+t_start = time.mktime(t_start.timetuple()) * 1000
+# Define the end date
+t_stop = datetime.datetime(2019, 6, 14, 0, 0)
+t_stop = time.mktime(t_stop.timetuple()) * 1000
+'''
+PARAMS = {'before':1559347200 , 'after':1555705140 ,'periods' :3600 }
+#19thapril to 1stjune 
+
+r4 = requests.get('https://api.cryptowat.ch/markets/kraken/btcusd/ohlc', params = PARAMS)
+data4 =  r4.json()
+d4 = data4['result']['3600']
+import pandas as pd
+df1 = pd.DataFrame(d4)
+df1.columns = ['timestamp','open','high','low','close','vwap','volume']
+df1['timestamp'] = pd.to_datetime(df1['timestamp'], unit='s')
+df1 = df1.drop('Datetime',axis=1)
+
+from pandas import ExcelWriter
+export_excel = df1.to_excel(r"C:\Users\admin\Desktop\python scrapping\kraken\Kraken_mainscrapp.xlsx", header=True) 
+
+
